@@ -1,0 +1,47 @@
+[gd_scene format=3 uid="uid://dlqdkv16yf4cl"]
+
+[ext_resource type="Script" uid="uid://dcdqtdn602qh" path="res://scripts/enviremont/parallax_background.gd" id="1_aw2x6"]
+[ext_resource type="Texture2D" uid="uid://ujymyuqmah0a" path="res://assets/tile/parallax_background/layer_1.png" id="1_k2rm1"]
+[ext_resource type="Texture2D" uid="uid://mm37dxjfb1mn" path="res://assets/tile/parallax_background/layer_2.png" id="2_aw2x6"]
+[ext_resource type="Texture2D" uid="uid://bnla8indnvaoh" path="res://assets/tile/parallax_background/layer_3.png" id="3_a70l1"]
+[ext_resource type="Texture2D" uid="uid://dsba12pxedo8w" path="res://assets/tile/parallax_background/layer_4.png" id="4_232ft"]
+[ext_resource type="PackedScene" uid="uid://ckfkvn62l6bsh" path="res://scenes/enviroment/mask.tscn" id="6_a70l1"]
+
+[node name="Background" type="ParallaxBackground" unique_id=1571023724]
+script = ExtResource("1_aw2x6")
+layer_speed = Array[float]([20.0, 15.0, 10.0, 5.0])
+
+[node name="Layer_4" type="ParallaxLayer" parent="." unique_id=2071617444]
+motion_mirroring = Vector2(320, 180)
+
+[node name="TextureRect" type="TextureRect" parent="Layer_4" unique_id=886922884]
+offset_right = 40.0
+offset_bottom = 40.0
+texture = ExtResource("4_232ft")
+
+[node name="Layer_1" type="ParallaxLayer" parent="." unique_id=1355510371]
+motion_mirroring = Vector2(320, 0)
+
+[node name="TextureRect" type="TextureRect" parent="Layer_1" unique_id=1343485670]
+offset_right = 40.0
+offset_bottom = 40.0
+texture = ExtResource("1_k2rm1")
+
+[node name="Layer_2" type="ParallaxLayer" parent="." unique_id=1768644456]
+motion_mirroring = Vector2(320, 0)
+
+[node name="TextureRect" type="TextureRect" parent="Layer_2" unique_id=1856616433]
+offset_right = 40.0
+offset_bottom = 40.0
+texture = ExtResource("2_aw2x6")
+
+[node name="Layer_3" type="ParallaxLayer" parent="." unique_id=1936063100]
+motion_mirroring = Vector2(320, 0)
+
+[node name="TextureRect" type="TextureRect" parent="Layer_3" unique_id=1861462553]
+offset_right = 40.0
+offset_bottom = 40.0
+texture = ExtResource("3_a70l1")
+
+[node name="Mask" parent="." unique_id=1116983147 instance=ExtResource("6_a70l1")]
+color = Color(0.47052103, 0.44987577, 0.48283494, 1)
