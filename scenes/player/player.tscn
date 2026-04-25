@@ -1,0 +1,75 @@
+[gd_scene format=3 uid="uid://d3j3ntmb0id0g"]
+
+[ext_resource type="Texture2D" uid="uid://xn4u60scv1gu" path="res://assets/player/char_red.png" id="1_8afob"]
+
+[sub_resource type="Animation" id="Animation_dovo2"]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath(".:frame")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [0]
+}
+
+[sub_resource type="Animation" id="Animation_gmlin"]
+resource_name = "idle"
+loop_mode = 1
+step = 0.1
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath(".:frame")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.1, 0.2, 0.3, 0.4, 0.5),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1),
+"update": 1,
+"values": [0, 1, 2, 3, 4, 5]
+}
+
+[sub_resource type="Animation" id="Animation_lvxji"]
+resource_name = "run"
+length = 0.8
+loop_mode = 1
+step = 0.1
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath(".:frame")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1, 1, 1),
+"update": 1,
+"values": [16, 16, 17, 18, 19, 20, 21, 22]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_p47bc"]
+_data = {
+&"RESET": SubResource("Animation_dovo2"),
+&"idle": SubResource("Animation_gmlin"),
+&"run": SubResource("Animation_lvxji")
+}
+
+[node name="Player" type="CharacterBody2D" unique_id=2097523143]
+
+[node name="Collision" type="CollisionShape2D" parent="." unique_id=651430303]
+
+[node name="Texture" type="Sprite2D" parent="." unique_id=1084151444]
+texture = ExtResource("1_8afob")
+hframes = 8
+vframes = 11
+
+[node name="Animation" type="AnimationPlayer" parent="." unique_id=245300483]
+root_node = NodePath("../Texture")
+libraries/ = SubResource("AnimationLibrary_p47bc")
+
+[node name="LevelCamera" type="Camera2D" parent="." unique_id=294741754]
