@@ -5,6 +5,7 @@
 [ext_resource type="TileSet" uid="uid://b48isrrq8u7pd" path="res://tiles/grass.tres" id="3_klq6b"]
 [ext_resource type="PackedScene" uid="uid://dlqdkv16yf4cl" path="res://scenes/enviroment/parallax_background.tscn" id="4_b121j"]
 [ext_resource type="PackedScene" uid="uid://ckfkvn62l6bsh" path="res://scenes/enviroment/mask.tscn" id="5_8c41q"]
+[ext_resource type="PackedScene" uid="uid://d3j3ntmb0id0g" path="res://scenes/player/player.tscn" id="6_2r41h"]
 
 [node name="Level" type="Node2D" unique_id=2144180599]
 
@@ -29,3 +30,7 @@ layer_0/tile_data = PackedInt32Array(327687, 0, 0, 327685, 2, 0, 327691, 1, 0, 3
 [node name="Background" parent="." unique_id=1571023724 instance=ExtResource("4_b121j")]
 
 [node name="Mask" parent="." unique_id=1116983147 instance=ExtResource("5_8c41q")]
+visible = false
+
+[node name="Player" parent="." unique_id=2097523143 instance=ExtResource("6_2r41h")]
+position = Vector2(61, 31)
