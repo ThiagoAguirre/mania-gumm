@@ -33,4 +33,4 @@ layer_0/tile_data = PackedInt32Array(327687, 0, 0, 327685, 2, 0, 327691, 1, 0, 3
 visible = false
 
 [node name="Player" parent="." unique_id=2097523143 instance=ExtResource("6_2r41h")]
-position = Vector2(61, 31)
+position = Vector2(40, 0)
