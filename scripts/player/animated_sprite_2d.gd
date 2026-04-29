@@ -8,17 +8,15 @@ class_name PlayerAnimatedSprite
 @export var landing_animation: StringName = &"landing"
 @export var crouch_idle_animation: StringName = &"crouch_idle"
 @export var crouch_walk_animation: StringName = &"crouch_walk"
+@export var animation_player_path: NodePath = ^"../AnimationPlayer"
 
 # Landing temporariamente desativado.
 # var is_landing: bool = false
 
+@onready var animation_player: AnimationPlayer = get_node_or_null(animation_player_path) as AnimationPlayer
+
 
 func _ready() -> void:
-	# Landing temporariamente desativado.
-	# if sprite_frames != null and sprite_frames.has_animation(landing_animation):
-	# 	sprite_frames.set_animation_loop(landing_animation, false)
-	#
-	# animation_finished.connect(_on_animation_finished)
 	pass
 
 
@@ -73,19 +71,35 @@ func vertical_behavior(current_velocity: Vector2, is_on_floor: bool, _just_lande
 
 
 func play_animation(animation_name: StringName) -> void:
-	if sprite_frames == null:
+	if animation_player == null:
 		return
 
-	if has_animation(animation_name):
-		if animation != animation_name or not is_playing():
-			play(animation_name)
-	elif has_animation(idle_animation):
-		if animation != idle_animation or not is_playing():
-			play(idle_animation)
+	var resolved_animation: StringName = resolve_animation_name(animation_name)
+	if resolved_animation != StringName():
+		if animation_player.current_animation != resolved_animation or not animation_player.is_playing():
+			animation_player.play(resolved_animation)
+		return
+
+	var fallback_animation: StringName = resolve_animation_name(idle_animation)
+	if fallback_animation != StringName():
+		if animation_player.current_animation != fallback_animation or not animation_player.is_playing():
+			animation_player.play(fallback_animation)
 
 
-func has_animation(animation_name: StringName) -> bool:
-	return sprite_frames != null and sprite_frames.has_animation(animation_name)
+func resolve_animation_name(animation_name: StringName) -> StringName:
+	if animation_name == StringName():
+		return StringName()
+
+	if animation_player.has_animation(animation_name):
+		return animation_name
+
+	if animation_name == fall_animation and animation_player.has_animation(jump_animation):
+		return jump_animation
+
+	if animation_name == crouch_walk_animation and animation_player.has_animation(crouch_idle_animation):
+		return crouch_idle_animation
+
+	return StringName()
 
 
 # Landing temporariamente desativado.

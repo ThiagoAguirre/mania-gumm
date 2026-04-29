@@ -6,7 +6,7 @@ class_name Player
 @export var gravity: float = float(ProjectSettings.get_setting("physics/2d/default_gravity"))
 @export var sprite_path: NodePath = ^"AnimatedSprite2D"
 
-@onready var player_sprite: AnimatedSprite2D = get_node_or_null(sprite_path) as AnimatedSprite2D
+@onready var player_sprite: Node = get_node_or_null(sprite_path)
 
 
 func _physics_process(_delta: float) -> void:
