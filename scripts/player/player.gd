@@ -5,20 +5,9 @@ class_name Player
 @export var jump_velocity: float = -300.0
 @export var gravity: float = float(ProjectSettings.get_setting("physics/2d/default_gravity"))
 @export var sprite_path: NodePath = ^"AnimatedSprite2D"
-@export var animation_player_path: NodePath = ^"AnimationPlayer"
 @export var landing_min_fall_distance: float = 64.0
 
-@export_group("Animations")
-@export var idle_animation: StringName = &"idle"
-@export var run_animation: StringName = &"run"
-@export var jump_animation: StringName = &"jump"
-@export var fall_animation: StringName = &"jump"
-@export var landing_animation: StringName = &"landing"
-@export var crouch_idle_animation: StringName = &"crouch_idle"
-@export var crouch_walk_animation: StringName = &"crouch_walk"
-
-@onready var player_sprite: Node = get_node_or_null(sprite_path)
-@onready var animation_player: AnimationPlayer = get_node_or_null(animation_player_path) as AnimationPlayer
+@onready var player_animations: PlayerAnimations = get_node_or_null(sprite_path) as PlayerAnimations
 
 var is_landing: bool = false
 var is_tracking_fall: bool = false
@@ -26,8 +15,8 @@ var fall_start_y: float = 0.0
 
 
 func _ready() -> void:
-	if animation_player != null:
-		animation_player.animation_finished.connect(_on_animation_finished)
+	if player_animations != null:
+		player_animations.landing_finished.connect(_on_landing_finished)
 
 
 func _physics_process(_delta: float) -> void:
@@ -35,7 +24,8 @@ func _physics_process(_delta: float) -> void:
 
 	if is_landing:
 		landing_movement(_delta)
-		play_animation(landing_animation)
+		if player_animations != null:
+			player_animations.play_landing()
 		return
 
 	var is_crouching: bool = is_crouch_pressed()
@@ -62,12 +52,10 @@ func _physics_process(_delta: float) -> void:
 	elif just_landed:
 		stop_fall_tracking()
 
-	if player_sprite != null and player_sprite.has_method("animate"):
+	if player_animations != null:
 		var animation_velocity: Vector2 = velocity
 		animation_velocity.x = input_direction * speed
-		player_sprite.animate(animation_velocity)
-
-	update_animation(velocity, input_direction, is_crouching)
+		player_animations.animate(animation_velocity, velocity, input_direction, is_crouching, is_on_floor())
 
 
 func horizontal_movement_env(input_direction: float) -> void:
@@ -86,7 +74,8 @@ func landing_movement(delta: float) -> void:
 func start_landing() -> void:
 	is_landing = true
 	velocity.x = 0.0
-	play_animation(landing_animation)
+	if player_animations != null:
+		player_animations.play_landing()
 
 
 func start_fall_tracking() -> void:
@@ -99,7 +88,7 @@ func stop_fall_tracking() -> void:
 
 
 func should_play_landing() -> bool:
-	if not has_animation(landing_animation):
+	if player_animations == null or not player_animations.has_landing_animation():
 		return false
 
 	if not is_tracking_fall:
@@ -119,65 +108,5 @@ func is_crouch_pressed() -> bool:
 	return Input.is_key_pressed(KEY_CTRL)
 
 
-func update_animation(current_velocity: Vector2, input_direction: float, is_crouching: bool) -> void:
-	if is_landing:
-		play_animation(landing_animation)
-		return
-
-	if not is_on_floor() and current_velocity.y < 0.0:
-		play_animation(jump_animation)
-	elif not is_on_floor() and current_velocity.y > 0.0:
-		play_animation(fall_animation)
-	elif is_crouching:
-		update_crouch_animation(input_direction)
-	elif input_direction != 0.0:
-		play_animation(run_animation)
-	else:
-		play_animation(idle_animation)
-
-
-func update_crouch_animation(input_direction: float) -> void:
-	if input_direction != 0.0:
-		play_animation(crouch_walk_animation)
-	else:
-		play_animation(crouch_idle_animation)
-
-
-func play_animation(animation_name: StringName) -> void:
-	if animation_player == null:
-		return
-
-	var resolved_animation: StringName = resolve_animation_name(animation_name)
-	if resolved_animation == StringName():
-		resolved_animation = resolve_animation_name(idle_animation)
-
-	if resolved_animation == StringName():
-		return
-
-	if animation_player.current_animation != resolved_animation:
-		animation_player.play(resolved_animation)
-
-
-func resolve_animation_name(animation_name: StringName) -> StringName:
-	if animation_name == StringName() or animation_player == null:
-		return StringName()
-
-	if animation_player.has_animation(animation_name):
-		return animation_name
-
-	if animation_name == fall_animation and animation_player.has_animation(jump_animation):
-		return jump_animation
-
-	if animation_name == crouch_walk_animation and animation_player.has_animation(crouch_idle_animation):
-		return crouch_idle_animation
-
-	return StringName()
-
-
-func has_animation(animation_name: StringName) -> bool:
-	return animation_player != null and animation_player.has_animation(animation_name)
-
-
-func _on_animation_finished(animation_name: StringName) -> void:
-	if animation_name == landing_animation:
-		is_landing = false
+func _on_landing_finished() -> void:
+	is_landing = false
