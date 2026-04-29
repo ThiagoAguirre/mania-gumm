@@ -35,6 +35,9 @@ func _ready() -> void:
 
 
 func animate(facing_velocity: Vector2, current_velocity: Vector2, input_direction: float, is_crouching: bool, on_floor: bool) -> void:
+	if is_wall_landing or is_wall_sliding:
+		return
+
 	verify_position(facing_velocity)
 	update_animation(current_velocity, input_direction, is_crouching, on_floor)
 
@@ -59,6 +62,7 @@ func play_wall_land(side: int) -> bool:
 	is_attacking = false
 	is_wall_landing = true
 	is_wall_sliding = false
+	flip_h = side > 0
 	play_animation(animation_name, true)
 	return true
 
