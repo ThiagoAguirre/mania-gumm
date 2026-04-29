@@ -8,6 +8,7 @@
 [ext_resource type="PackedScene" uid="uid://d3j3ntmb0id0g" path="res://scenes/player/player.tscn" id="6_2r41h"]
 
 [node name="Level" type="Node2D" unique_id=2144180599]
+position = Vector2(-26, 0)
 
 [node name="levelDesign" type="Node2D" parent="." unique_id=1158056579]
 
@@ -33,4 +34,4 @@ layer_0/tile_data = PackedInt32Array(327687, 0, 0, 327685, 2, 0, 327691, 1, 0, 3
 visible = false
 
 [node name="Player" parent="." unique_id=2097523143 instance=ExtResource("6_2r41h")]
-position = Vector2(40, 0)
+position = Vector2(75, 46)
