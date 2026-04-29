@@ -26,12 +26,14 @@ signal wall_land_finished(side: int)
 var is_attacking: bool = false
 var is_wall_landing: bool = false
 var is_wall_sliding: bool = false
+var current_wall_side: int = 0
 
 
 func _ready() -> void:
 	stop()
 	if animation_player != null:
 		animation_player.animation_finished.connect(_on_animation_finished)
+		configure_wall_animation_loops()
 
 
 func animate(facing_velocity: Vector2, current_velocity: Vector2, input_direction: float, is_crouching: bool, on_floor: bool) -> void:
@@ -62,7 +64,8 @@ func play_wall_land(side: int) -> bool:
 	is_attacking = false
 	is_wall_landing = true
 	is_wall_sliding = false
-	flip_h = side > 0
+	current_wall_side = side
+	reset_wall_flip()
 	play_animation(animation_name, true)
 	return true
 
@@ -74,6 +77,8 @@ func play_wall_slide(side: int) -> bool:
 
 	is_wall_landing = false
 	is_wall_sliding = true
+	current_wall_side = side
+	reset_wall_flip()
 	play_animation(animation_name)
 	return true
 
@@ -81,6 +86,7 @@ func play_wall_slide(side: int) -> bool:
 func stop_wall_animation() -> void:
 	is_wall_landing = false
 	is_wall_sliding = false
+	current_wall_side = 0
 
 
 func play_attack() -> bool:
@@ -196,6 +202,25 @@ func get_wall_slide_animation(side: int) -> StringName:
 	return StringName()
 
 
+func reset_wall_flip() -> void:
+	flip_h = false
+
+
+func configure_wall_animation_loops() -> void:
+	set_animation_loop_mode(wall_land_left_animation, Animation.LOOP_NONE)
+	set_animation_loop_mode(wall_land_right_animation, Animation.LOOP_NONE)
+	set_animation_loop_mode(wall_slide_left_animation, Animation.LOOP_LINEAR)
+	set_animation_loop_mode(wall_slide_right_animation, Animation.LOOP_LINEAR)
+
+
+func set_animation_loop_mode(animation_name: StringName, loop_mode: int) -> void:
+	var resolved_animation: StringName = resolve_animation_name(animation_name)
+	if resolved_animation == StringName() or animation_player == null:
+		return
+
+	animation_player.get_animation(resolved_animation).loop_mode = loop_mode
+
+
 func _finish_attack_after_animation() -> void:
 	var attack_duration: float = 0.0
 	var resolved_animation: StringName = resolve_animation_name(punch_animation)
@@ -227,7 +252,9 @@ func _on_animation_finished(animation_name: StringName) -> void:
 		_finish_attack()
 	elif resolved_animation == get_wall_land_animation(-1):
 		is_wall_landing = false
+		current_wall_side = 0
 		wall_land_finished.emit(-1)
 	elif resolved_animation == get_wall_land_animation(1):
 		is_wall_landing = false
+		current_wall_side = 0
 		wall_land_finished.emit(1)

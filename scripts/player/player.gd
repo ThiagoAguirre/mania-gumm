@@ -7,7 +7,10 @@ class_name Player
 @export var sprite_path: NodePath = ^"AnimatedSprite2D"
 @export var landing_min_fall_distance: float = 64.0
 @export var wall_detector_path: NodePath = ^"RayCast2D"
-@export_range(0.0, 1.0, 0.05) var wall_slide_gravity_scale: float = 0.35
+@export var wall_slide_speed: float = 65.0
+@export var wall_jump_force_x: float = 220.0
+@export var wall_jump_force_y: float = -260.0
+@export var wall_jump_control_lock_time: float = 0.12
 
 @onready var player_animations: PlayerAnimations = get_node_or_null(sprite_path) as PlayerAnimations
 @onready var wall_detector: RayCast2D = get_node_or_null(wall_detector_path) as RayCast2D
@@ -19,6 +22,7 @@ var is_wall_landing: bool = false
 var is_wall_sliding: bool = false
 var wall_side: int = 0
 var facing_side: int = 1
+var wall_jump_control_lock_timer: float = 0.0
 var wall_detector_base_position: Vector2 = Vector2.ZERO
 var wall_detector_base_target: Vector2 = Vector2.ZERO
 
@@ -29,13 +33,13 @@ func _ready() -> void:
 		player_animations.wall_land_finished.connect(_on_wall_land_finished)
 
 	if wall_detector != null:
+		wall_detector.enabled = true
 		wall_detector_base_position = wall_detector.position
 		wall_detector_base_target = wall_detector.target_position
 
 
 func _physics_process(_delta: float) -> void:
 	var was_on_floor: bool = is_on_floor()
-	var was_wall_active: bool = is_wall_landing or is_wall_sliding
 
 	if is_landing:
 		landing_movement(_delta)
@@ -45,25 +49,28 @@ func _physics_process(_delta: float) -> void:
 
 	var is_crouching: bool = is_crouch_pressed()
 	var input_direction: float = get_horizontal_input()
+	var jump_pressed: bool = Input.is_action_just_pressed("ui_accept")
 	update_wall_detector_direction(input_direction)
+	update_wall_jump_lock(_delta)
 
 	horizontal_movement_env(input_direction)
-
-	if Input.is_action_just_pressed("ui_accept") and is_on_floor():
-		stop_wall_state()
-		velocity.y = jump_velocity
+	handle_jump_input(jump_pressed)
 
 	if not is_on_floor():
-		velocity.y += get_current_gravity() * _delta
+		velocity.y += gravity * _delta
+
+	limit_wall_slide_fall_speed()
 
 	move_and_slide()
 	update_wall_detection()
+	limit_wall_slide_fall_speed()
 
 	if was_on_floor and not is_on_floor():
 		start_fall_tracking()
 
 	var just_landed: bool = not was_on_floor and is_on_floor()
 	if just_landed:
+		wall_jump_control_lock_timer = 0.0
 		stop_wall_state()
 
 	if just_landed and should_play_landing():
@@ -73,14 +80,41 @@ func _physics_process(_delta: float) -> void:
 	elif just_landed:
 		stop_fall_tracking()
 
-	if was_wall_active and not is_wall_landing and not is_wall_sliding:
-		update_wall_detection()
-
 	update_animations(input_direction, is_crouching)
 
 
 func horizontal_movement_env(input_direction: float) -> void:
+	if wall_jump_control_lock_timer > 0.0:
+		return
+
 	velocity.x = input_direction * speed
+
+
+func handle_jump_input(jump_pressed: bool) -> void:
+	if not jump_pressed:
+		return
+
+	if is_wall_landing or is_wall_sliding:
+		wall_jump()
+	elif is_on_floor():
+		stop_wall_state()
+		velocity.y = jump_velocity
+
+
+func wall_jump() -> void:
+	var jump_wall_side: int = wall_side
+	if jump_wall_side == 0:
+		return
+
+	stop_wall_state()
+	wall_jump_control_lock_timer = wall_jump_control_lock_time
+	velocity.x = -jump_wall_side * wall_jump_force_x
+	velocity.y = wall_jump_force_y
+
+
+func update_wall_jump_lock(delta: float) -> void:
+	if wall_jump_control_lock_timer > 0.0:
+		wall_jump_control_lock_timer = maxf(wall_jump_control_lock_timer - delta, 0.0)
 
 
 func landing_movement(delta: float) -> void:
@@ -128,6 +162,14 @@ func update_wall_detection() -> void:
 	start_wall_land(detected_wall_side)
 
 
+func limit_wall_slide_fall_speed() -> void:
+	if not is_wall_landing and not is_wall_sliding:
+		return
+
+	if velocity.y > 0.0:
+		velocity.y = minf(velocity.y, wall_slide_speed)
+
+
 func start_wall_land(side: int) -> void:
 	if side == 0 or player_animations == null or not player_animations.has_wall_land_animation(side):
 		return
@@ -166,26 +208,21 @@ func update_animations(input_direction: float, is_crouching: bool) -> void:
 	player_animations.animate(animation_velocity, velocity, input_direction, is_crouching, is_on_floor())
 
 
-func get_current_gravity() -> float:
-	if is_wall_landing or is_wall_sliding:
-		return gravity * wall_slide_gravity_scale
-
-	return gravity
-
-
 func get_wall_contact_side() -> int:
-	var raycast_side: int = get_wall_side_from_raycast()
-	if raycast_side != 0:
-		return raycast_side
+	var collision_side: int = get_wall_side_from_slide_collision()
+	if collision_side != 0:
+		return collision_side
 
-	return get_wall_side_from_slide_collision()
+	return get_wall_side_from_raycast()
 
 
 func update_wall_detector_direction(input_direction: float) -> void:
 	if wall_detector == null:
 		return
 
-	if input_direction > 0.0:
+	if wall_side != 0:
+		facing_side = wall_side
+	elif input_direction > 0.0:
 		facing_side = 1
 	elif input_direction < 0.0:
 		facing_side = -1
@@ -193,26 +230,47 @@ func update_wall_detector_direction(input_direction: float) -> void:
 		facing_side = 1
 	elif velocity.x < 0.0:
 		facing_side = -1
-	elif wall_side != 0:
-		facing_side = wall_side
 
-	var target: Vector2 = wall_detector_base_target
-	var detector_position: Vector2 = wall_detector_base_position
-	detector_position.x = absf(wall_detector_base_position.x) * facing_side
-	target.x = absf(wall_detector_base_target.x) * facing_side
-	wall_detector.position = detector_position
-	wall_detector.target_position = target
+	set_wall_detector_side(facing_side)
 
 
 func get_wall_side_from_raycast() -> int:
 	if wall_detector == null:
 		return 0
 
-	wall_detector.force_raycast_update()
-	if wall_detector.is_colliding():
+	if wall_side != 0 and is_raycast_colliding_to_side(wall_side):
+		return wall_side
+
+	if is_raycast_colliding_to_side(facing_side):
 		return facing_side
 
+	if is_raycast_colliding_to_side(-facing_side):
+		return -facing_side
+
+	set_wall_detector_side(facing_side)
 	return 0
+
+
+func is_raycast_colliding_to_side(side: int) -> bool:
+	if wall_detector == null or side == 0:
+		return false
+
+	set_wall_detector_side(side)
+	wall_detector.force_raycast_update()
+	return wall_detector.is_colliding()
+
+
+func set_wall_detector_side(side: int) -> void:
+	if wall_detector == null or side == 0:
+		return
+
+	var target: Vector2 = wall_detector_base_target
+	var detector_position: Vector2 = wall_detector_base_position
+	detector_position.x = absf(wall_detector_base_position.x) * side
+	target.x = absf(wall_detector_base_target.x) * side
+	wall_detector.position = detector_position
+	wall_detector.target_position = target
+
 
 func get_wall_side_from_slide_collision() -> int:
 	for collision_index in range(get_slide_collision_count()):

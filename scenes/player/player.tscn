@@ -2024,7 +2024,6 @@ script = ExtResource("2_1tuq7")
 speed = 70
 jump_velocity = -170.0
 gravity = 350.0
-wall_slide_gravity_scale = 0.2
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=651430303]
 position = Vector2(-1, 0)
