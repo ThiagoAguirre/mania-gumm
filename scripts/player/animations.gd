@@ -3,6 +3,7 @@ class_name PlayerAnimations
 
 signal landing_finished
 signal attack_finished
+signal wall_land_finished(side: int)
 
 @export var animation_player_path: NodePath = ^"../AnimationPlayer"
 
@@ -15,10 +16,16 @@ signal attack_finished
 @export var crouch_idle_animation: StringName = &"crouch_idle"
 @export var crouch_walk_animation: StringName = &"crouch_walk"
 @export var punch_animation: StringName = &"punch"
+@export var wall_land_left_animation: StringName = &"wall_land_left"
+@export var wall_land_right_animation: StringName = &"wall_land_right"
+@export var wall_slide_left_animation: StringName = &"wall_slide_left"
+@export var wall_slide_right_animation: StringName = &"wall_slide_right"
 
 @onready var animation_player: AnimationPlayer = get_node_or_null(animation_player_path) as AnimationPlayer
 
 var is_attacking: bool = false
+var is_wall_landing: bool = false
+var is_wall_sliding: bool = false
 
 
 func _ready() -> void:
@@ -44,6 +51,34 @@ func play_landing() -> void:
 	play_animation(landing_animation)
 
 
+func play_wall_land(side: int) -> bool:
+	var animation_name: StringName = get_wall_land_animation(side)
+	if animation_name == StringName():
+		return false
+
+	is_attacking = false
+	is_wall_landing = true
+	is_wall_sliding = false
+	play_animation(animation_name, true)
+	return true
+
+
+func play_wall_slide(side: int) -> bool:
+	var animation_name: StringName = get_wall_slide_animation(side)
+	if animation_name == StringName():
+		return false
+
+	is_wall_landing = false
+	is_wall_sliding = true
+	play_animation(animation_name)
+	return true
+
+
+func stop_wall_animation() -> void:
+	is_wall_landing = false
+	is_wall_sliding = false
+
+
 func play_attack() -> bool:
 	if is_attacking:
 		return false
@@ -58,6 +93,9 @@ func play_attack() -> bool:
 
 
 func update_animation(current_velocity: Vector2, input_direction: float, is_crouching: bool, on_floor: bool) -> void:
+	if is_wall_landing or is_wall_sliding:
+		return
+
 	if should_keep_attack_animation(input_direction, is_crouching, on_floor):
 		return
 
@@ -109,6 +147,10 @@ func resolve_animation_name(animation_name: StringName) -> StringName:
 	if animation_player.has_animation(animation_name):
 		return animation_name
 
+	for available_animation in animation_player.get_animation_list():
+		if String(available_animation).strip_edges() == String(animation_name).strip_edges():
+			return StringName(available_animation)
+
 	if animation_name == fall_animation and animation_player.has_animation(jump_animation):
 		return jump_animation
 
@@ -124,6 +166,30 @@ func has_animation(animation_name: StringName) -> bool:
 
 func has_landing_animation() -> bool:
 	return has_animation(landing_animation)
+
+
+func has_wall_land_animation(side: int) -> bool:
+	return get_wall_land_animation(side) != StringName()
+
+
+func has_wall_slide_animation(side: int) -> bool:
+	return get_wall_slide_animation(side) != StringName()
+
+
+func get_wall_land_animation(side: int) -> StringName:
+	if side < 0:
+		return resolve_animation_name(wall_land_left_animation)
+	if side > 0:
+		return resolve_animation_name(wall_land_right_animation)
+	return StringName()
+
+
+func get_wall_slide_animation(side: int) -> StringName:
+	if side < 0:
+		return resolve_animation_name(wall_slide_left_animation)
+	if side > 0:
+		return resolve_animation_name(wall_slide_right_animation)
+	return StringName()
 
 
 func _finish_attack_after_animation() -> void:
@@ -149,7 +215,15 @@ func _finish_attack() -> void:
 
 
 func _on_animation_finished(animation_name: StringName) -> void:
-	if animation_name == landing_animation:
+	var resolved_animation: StringName = resolve_animation_name(animation_name)
+
+	if resolved_animation == resolve_animation_name(landing_animation):
 		landing_finished.emit()
-	elif animation_name == punch_animation:
+	elif resolved_animation == resolve_animation_name(punch_animation):
 		_finish_attack()
+	elif resolved_animation == get_wall_land_animation(-1):
+		is_wall_landing = false
+		wall_land_finished.emit(-1)
+	elif resolved_animation == get_wall_land_animation(1):
+		is_wall_landing = false
+		wall_land_finished.emit(1)
