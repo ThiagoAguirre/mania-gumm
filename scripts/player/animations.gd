@@ -4,6 +4,8 @@ class_name PlayerAnimations
 signal landing_finished
 signal attack_finished
 signal wall_land_finished(side: int)
+signal hurt_finished
+signal death_finished
 
 @export var animation_player_path: NodePath = ^"../AnimationPlayer"
 
@@ -16,6 +18,8 @@ signal wall_land_finished(side: int)
 @export var crouch_idle_animation: StringName = &"crouch_idle"
 @export var crouch_walk_animation: StringName = &"crouch_walk"
 @export var punch_animation: StringName = &"punch"
+@export var hurt_animation: StringName = &"hurt"
+@export var death_animation: StringName = &"death"
 @export var wall_land_left_animation: StringName = &"wall_land_left"
 @export var wall_land_right_animation: StringName = &"wall_land_right"
 @export var wall_slide_left_animation: StringName = &"wall_slide_left"
@@ -25,6 +29,8 @@ signal wall_land_finished(side: int)
 @onready var animation_player: AnimationPlayer = get_node_or_null(animation_player_path) as AnimationPlayer
 
 var is_attacking: bool = false
+var is_hurt: bool = false
+var is_dead: bool = false
 var is_wall_landing: bool = false
 var is_wall_sliding: bool = false
 var current_wall_side: int = 0
@@ -32,12 +38,17 @@ var current_wall_side: int = 0
 
 func _ready() -> void:
 	stop()
+	animation_finished.connect(_on_sprite_animation_finished)
 	if animation_player != null:
 		animation_player.animation_finished.connect(_on_animation_finished)
 		configure_wall_animation_loops()
+	configure_life_animation_loops()
 
 
 func animate(facing_velocity: Vector2, current_velocity: Vector2, input_direction: float, is_crouching: bool, on_floor: bool) -> void:
+	if is_dead or is_hurt:
+		return
+
 	if is_wall_landing or is_wall_sliding:
 		return
 
@@ -53,11 +64,17 @@ func verify_position(current_velocity: Vector2) -> void:
 
 
 func play_landing() -> void:
+	if is_dead or is_hurt:
+		return
+
 	is_attacking = false
 	play_animation(landing_animation)
 
 
 func play_wall_land(side: int) -> bool:
+	if is_dead or is_hurt:
+		return false
+
 	var animation_name: StringName = get_wall_land_animation(side)
 	if animation_name == StringName():
 		return false
@@ -72,6 +89,9 @@ func play_wall_land(side: int) -> bool:
 
 
 func play_wall_slide(side: int) -> bool:
+	if is_dead or is_hurt:
+		return false
+
 	var animation_name: StringName = get_wall_slide_animation(side)
 	if animation_name == StringName():
 		return false
@@ -92,7 +112,7 @@ func stop_wall_animation() -> void:
 
 
 func play_attack() -> bool:
-	if is_attacking:
+	if is_attacking or is_hurt or is_dead:
 		return false
 
 	if not has_animation(punch_animation):
@@ -104,7 +124,33 @@ func play_attack() -> bool:
 	return true
 
 
+func play_hurt() -> bool:
+	if is_dead or not has_life_animation(hurt_animation):
+		return false
+
+	is_attacking = false
+	is_hurt = true
+	stop_wall_animation()
+	play_life_animation(hurt_animation)
+	return true
+
+
+func play_death() -> bool:
+	if is_dead:
+		return false
+
+	is_attacking = false
+	is_hurt = false
+	is_dead = true
+	stop_wall_animation()
+	play_life_animation(death_animation)
+	return true
+
+
 func update_animation(current_velocity: Vector2, input_direction: float, is_crouching: bool, on_floor: bool) -> void:
+	if is_dead or is_hurt:
+		return
+
 	if is_wall_landing or is_wall_sliding:
 		return
 
@@ -176,8 +222,24 @@ func has_animation(animation_name: StringName) -> bool:
 	return animation_player != null and animation_player.has_animation(animation_name)
 
 
+func has_sprite_animation(animation_name: StringName) -> bool:
+	return sprite_frames != null and sprite_frames.has_animation(animation_name)
+
+
+func has_life_animation(animation_name: StringName) -> bool:
+	return has_animation(animation_name) or has_sprite_animation(animation_name)
+
+
 func has_landing_animation() -> bool:
 	return has_animation(landing_animation)
+
+
+func has_hurt_animation() -> bool:
+	return has_life_animation(hurt_animation)
+
+
+func has_death_animation() -> bool:
+	return has_life_animation(death_animation)
 
 
 func has_wall_land_animation(side: int) -> bool:
@@ -215,6 +277,19 @@ func configure_wall_animation_loops() -> void:
 	set_animation_loop_mode(wall_slide_right_animation, Animation.LOOP_LINEAR)
 
 
+func configure_life_animation_loops() -> void:
+	set_animation_loop_mode(hurt_animation, Animation.LOOP_NONE)
+	set_animation_loop_mode(death_animation, Animation.LOOP_NONE)
+
+	if sprite_frames == null:
+		return
+
+	if sprite_frames.has_animation(hurt_animation):
+		sprite_frames.set_animation_loop(hurt_animation, false)
+	if sprite_frames.has_animation(death_animation):
+		sprite_frames.set_animation_loop(death_animation, false)
+
+
 func set_animation_loop_mode(animation_name: StringName, loop_mode: int) -> void:
 	var resolved_animation: StringName = resolve_animation_name(animation_name)
 	if resolved_animation == StringName() or animation_player == null:
@@ -236,6 +311,29 @@ func get_animation_speed_for_duration(animation_name: StringName, target_duratio
 		return 1.0
 
 	return animation_length / target_duration
+
+
+func play_life_animation(animation_name: StringName) -> void:
+	if animation_player != null and animation_player.has_animation(animation_name):
+		play_animation(animation_name, true)
+		return
+
+	if not has_sprite_animation(animation_name):
+		finish_life_animation(animation_name)
+		return
+
+	if animation_player != null:
+		animation_player.stop()
+
+	play(animation_name)
+
+
+func finish_life_animation(animation_name: StringName) -> void:
+	if animation_name == hurt_animation:
+		is_hurt = false
+		hurt_finished.emit()
+	elif animation_name == death_animation:
+		death_finished.emit()
 
 
 func _finish_attack_after_animation() -> void:
@@ -267,6 +365,10 @@ func _on_animation_finished(animation_name: StringName) -> void:
 		landing_finished.emit()
 	elif resolved_animation == resolve_animation_name(punch_animation):
 		_finish_attack()
+	elif resolved_animation == resolve_animation_name(hurt_animation):
+		finish_life_animation(hurt_animation)
+	elif resolved_animation == resolve_animation_name(death_animation):
+		finish_life_animation(death_animation)
 	elif resolved_animation == get_wall_land_animation(-1):
 		is_wall_landing = false
 		current_wall_side = 0
@@ -275,3 +377,10 @@ func _on_animation_finished(animation_name: StringName) -> void:
 		is_wall_landing = false
 		current_wall_side = 0
 		wall_land_finished.emit(1)
+
+
+func _on_sprite_animation_finished() -> void:
+	if animation == hurt_animation:
+		finish_life_animation(hurt_animation)
+	elif animation == death_animation:
+		finish_life_animation(death_animation)

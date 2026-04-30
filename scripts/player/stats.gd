@@ -1,6 +1,12 @@
 extends Node
 class_name PlayerStats
 
+signal experience_changed(current_experience: int, current_level: int, experience_to_next_level: int)
+signal level_changed(new_level: int)
+signal health_changed(current_health: int, max_health: int)
+signal damaged(damage_taken: int, current_health: int, max_health: int)
+signal died
+
 enum PlayerClass {
 	NONE,
 	WARRIOR,
@@ -33,6 +39,52 @@ const CLASS_STATS: Dictionary = {
 	},
 }
 
+const EXPERIENCE_BY_LEVEL: Array[int] = [
+	0,
+	300,
+	900,
+	2700,
+	6500,
+	14000,
+	23000,
+	34000,
+	48000,
+	64000,
+	85000,
+	100000,
+	120000,
+	140000,
+	165000,
+	195000,
+	225000,
+	265000,
+	305000,
+	355000,
+]
+
+const PROFICIENCY_BY_LEVEL: Array[int] = [
+	2,
+	2,
+	2,
+	2,
+	3,
+	3,
+	3,
+	3,
+	4,
+	4,
+	4,
+	4,
+	5,
+	5,
+	5,
+	5,
+	6,
+	6,
+	6,
+	6,
+]
+
 @export_group("Class")
 @export_enum("None", "Warrior", "Mage", "Rogue", "Cleric") var player_class: int = PlayerClass.NONE:
 	set(value):
@@ -40,6 +92,10 @@ const CLASS_STATS: Dictionary = {
 		if is_node_ready():
 			apply_class_stats()
 			reset_current_stats()
+
+@export_group("Level")
+@export_range(1, 20, 1) var level: int = 1
+@export var experience: int = 0
 
 @export_group("Attributes")
 ## Attributes are the character's core values. They exist for every class.
@@ -99,6 +155,7 @@ var buff_magic_defense_bonus: int = 0
 
 
 func _ready() -> void:
+	set_experience(experience)
 	apply_class_stats()
 	reset_current_stats()
 
@@ -128,6 +185,7 @@ func reset_current_stats() -> void:
 	current_mana = max_mana
 	current_defense = calculate_total_defense()
 	current_magic_defense = calculate_total_magic_defense()
+	health_changed.emit(current_health, max_health)
 
 
 func calculate_max_health() -> int:
@@ -155,12 +213,22 @@ func calculate_total_magic_defense() -> int:
 	return max(base_magic_defense + class_magic_defense_bonus + equipment_magic_defense_bonus + buff_magic_defense_bonus + get_attribute_modifier(get_total_wisdom()), 0)
 
 
-func take_damage(amount: int) -> void:
-	if amount <= 0:
-		return
+func take_damage(amount: int) -> int:
+	if amount <= 0 or current_health <= 0:
+		return 0
 
 	var reduced_damage: int = max(amount - current_defense, 0)
+	if reduced_damage <= 0:
+		return 0
+
 	current_health = max(current_health - reduced_damage, 0)
+	health_changed.emit(current_health, max_health)
+	damaged.emit(reduced_damage, current_health, max_health)
+
+	if current_health <= 0:
+		died.emit()
+
+	return reduced_damage
 
 
 func heal(amount: int) -> void:
@@ -168,6 +236,7 @@ func heal(amount: int) -> void:
 		return
 
 	current_health = min(current_health + amount, calculate_max_health())
+	health_changed.emit(current_health, max_health)
 
 
 func use_mana(amount: int) -> bool:
@@ -190,6 +259,72 @@ func restore_mana(amount: int) -> void:
 
 func choose_class(new_class: int) -> void:
 	player_class = new_class
+
+
+func add_experience(amount: int) -> void:
+	if amount <= 0 or is_max_level():
+		return
+
+	set_experience(experience + amount)
+
+
+func set_experience(new_experience: int) -> void:
+	experience = max(new_experience, 0)
+	var previous_level: int = level
+	level = get_level_for_experience(experience)
+
+	if level != previous_level:
+		level_changed.emit(level)
+
+	experience_changed.emit(experience, level, get_experience_to_next_level())
+
+
+func get_level_for_experience(total_experience: int) -> int:
+	var resolved_level: int = 1
+	for threshold_index in range(EXPERIENCE_BY_LEVEL.size()):
+		if total_experience < EXPERIENCE_BY_LEVEL[threshold_index]:
+			break
+
+		resolved_level = threshold_index + 1
+
+	return clampi(resolved_level, 1, EXPERIENCE_BY_LEVEL.size())
+
+
+func get_experience_for_current_level() -> int:
+	return EXPERIENCE_BY_LEVEL[level - 1]
+
+
+func get_experience_for_next_level() -> int:
+	if is_max_level():
+		return -1
+
+	return EXPERIENCE_BY_LEVEL[level]
+
+
+func get_experience_to_next_level() -> int:
+	var next_level_experience: int = get_experience_for_next_level()
+	if next_level_experience < 0:
+		return 0
+
+	return max(next_level_experience - experience, 0)
+
+
+func get_level_progress() -> float:
+	if is_max_level():
+		return 1.0
+
+	var current_level_experience: int = get_experience_for_current_level()
+	var next_level_experience: int = get_experience_for_next_level()
+	var level_experience_range: int = max(next_level_experience - current_level_experience, 1)
+	return clampf(float(experience - current_level_experience) / float(level_experience_range), 0.0, 1.0)
+
+
+func get_proficiency_bonus() -> int:
+	return PROFICIENCY_BY_LEVEL[level - 1]
+
+
+func is_max_level() -> bool:
+	return level >= EXPERIENCE_BY_LEVEL.size()
 
 
 func reset_class_bonuses() -> void:
@@ -243,3 +378,4 @@ func recalculate_totals_keep_current() -> void:
 	current_mana = min(current_mana, max_mana)
 	current_defense = calculate_total_defense()
 	current_magic_defense = calculate_total_magic_defense()
+	health_changed.emit(current_health, max_health)
