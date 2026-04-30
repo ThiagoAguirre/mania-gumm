@@ -1,12 +1,19 @@
-[gd_scene format=3 uid="uid://b5ncp5gvnj46k"]
+[gd_scene format=3 uid="uid://uba3ldexp4vq"]
+
+[ext_resource type="Script" uid="uid://n0aebpoynv57" path="res://scripts/Enemy/enemy_template.gd" id="1_3kb6q"]
+[ext_resource type="Script" uid="uid://dfjvs7a8vqirf" path="res://scripts/Enemy/enemy_texture.gd" id="2_qwg4h"]
+[ext_resource type="Script" uid="uid://d1muhdpn30fae" path="res://scripts/Enemy/detection_area.gd" id="3_1gi7g"]
 
 [node name="EnemyTemplate" type="Node2D" unique_id=1191673170]
+script = ExtResource("1_3kb6q")
 
 [node name="Texture" type="Sprite2D" parent="." unique_id=1254213782]
+script = ExtResource("2_qwg4h")
 
 [node name="Collision" type="CollisionShape2D" parent="." unique_id=778480925]
 
 [node name="DetectionArea" type="Area2D" parent="." unique_id=1011719582]
+script = ExtResource("3_1gi7g")
 
 [node name="CollisionShape2D2" type="CollisionShape2D" parent="DetectionArea" unique_id=514824758]
 
