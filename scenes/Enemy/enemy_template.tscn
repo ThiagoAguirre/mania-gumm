@@ -1,0 +1,24 @@
+[gd_scene format=3 uid="uid://b5ncp5gvnj46k"]
+
+[node name="EnemyTemplate" type="Node2D" unique_id=1191673170]
+
+[node name="Texture" type="Sprite2D" parent="." unique_id=1254213782]
+
+[node name="Collision" type="CollisionShape2D" parent="." unique_id=778480925]
+
+[node name="DetectionArea" type="Area2D" parent="." unique_id=1011719582]
+
+[node name="CollisionShape2D2" type="CollisionShape2D" parent="DetectionArea" unique_id=514824758]
+
+[node name="CollisionArea" type="Area2D" parent="." unique_id=752842965]
+
+[node name="CollisionShape2D2" type="CollisionShape2D" parent="CollisionArea" unique_id=1212378692]
+
+[node name="AttackArea" type="Area2D" parent="." unique_id=716694628]
+
+[node name="CollisionShape2D2" type="CollisionShape2D" parent="AttackArea" unique_id=193596456]
+
+[node name="Animation" type="AnimationPlayer" parent="." unique_id=1841468468]
+root_node = NodePath("../Texture")
+
+[node name="floorRay" type="RayCast2D" parent="." unique_id=2141643125]
