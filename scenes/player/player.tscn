@@ -20,6 +20,7 @@
 [ext_resource type="Texture2D" uid="uid://dwnuqj1gsoh6x" path="res://resources/2D-Pixel-Art-Character-Template/Walk/PlayerWalk 48x48.png" id="15_007i1"]
 [ext_resource type="Texture2D" uid="uid://bl416p3bkr8nq" path="res://resources/2D-Pixel-Art-Character-Template/Wall Land/player wall land 48x48.png" id="17_6cv16"]
 [ext_resource type="Texture2D" uid="uid://ddhue10odrflk" path="res://resources/2D-Pixel-Art-Character-Template/Wall Slide/player wall slide 48x48.png" id="19_j4nxn"]
+[ext_resource type="Script" uid="uid://c1kq22ljk0xwa" path="res://scripts/player/stats.gd" id="21_3j4b4"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_myrg7"]
 size = Vector2(22, 37)
@@ -2024,6 +2025,9 @@ script = ExtResource("2_1tuq7")
 speed = 70
 jump_velocity = -170.0
 gravity = 350.0
+wall_slide_speed = 35.0
+wall_jump_force_x = 150.0
+wall_jump_force_y = -130.0
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=651430303]
 position = Vector2(-1, 0)
@@ -2052,3 +2056,6 @@ libraries/ = SubResource("AnimationLibrary_bysbl")
 [node name="RayCast2D" type="RayCast2D" parent="." unique_id=1692598977]
 position = Vector2(0, -9)
 target_position = Vector2(14, 0)
+
+[node name="Stats" type="Node" parent="." unique_id=509938653]
+script = ExtResource("21_3j4b4")

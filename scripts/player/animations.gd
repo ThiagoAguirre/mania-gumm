@@ -20,6 +20,7 @@ signal wall_land_finished(side: int)
 @export var wall_land_right_animation: StringName = &"wall_land_right"
 @export var wall_slide_left_animation: StringName = &"wall_slide_left"
 @export var wall_slide_right_animation: StringName = &"wall_slide_right"
+@export var wall_slide_loop_duration: float = 4.0
 
 @onready var animation_player: AnimationPlayer = get_node_or_null(animation_player_path) as AnimationPlayer
 
@@ -79,7 +80,8 @@ func play_wall_slide(side: int) -> bool:
 	is_wall_sliding = true
 	current_wall_side = side
 	reset_wall_flip()
-	play_animation(animation_name)
+	set_animation_loop_mode(animation_name, Animation.LOOP_LINEAR)
+	play_animation(animation_name, true, get_animation_speed_for_duration(animation_name, wall_slide_loop_duration))
 	return true
 
 
@@ -132,7 +134,7 @@ func update_crouch_animation(input_direction: float) -> void:
 		play_animation(crouch_idle_animation)
 
 
-func play_animation(animation_name: StringName, restart: bool = false) -> void:
+func play_animation(animation_name: StringName, restart: bool = false, custom_speed: float = 1.0) -> void:
 	if animation_player == null:
 		return
 
@@ -146,8 +148,8 @@ func play_animation(animation_name: StringName, restart: bool = false) -> void:
 	if restart:
 		animation_player.stop()
 
-	if restart or animation_player.current_animation != resolved_animation:
-		animation_player.play(resolved_animation)
+	if restart or animation_player.current_animation != resolved_animation or not animation_player.is_playing():
+		animation_player.play(resolved_animation, -1.0, custom_speed)
 
 
 func resolve_animation_name(animation_name: StringName) -> StringName:
@@ -219,6 +221,21 @@ func set_animation_loop_mode(animation_name: StringName, loop_mode: int) -> void
 		return
 
 	animation_player.get_animation(resolved_animation).loop_mode = loop_mode
+
+
+func get_animation_speed_for_duration(animation_name: StringName, target_duration: float) -> float:
+	if target_duration <= 0.0 or animation_player == null:
+		return 1.0
+
+	var resolved_animation: StringName = resolve_animation_name(animation_name)
+	if resolved_animation == StringName():
+		return 1.0
+
+	var animation_length: float = animation_player.get_animation(resolved_animation).length
+	if animation_length <= 0.0:
+		return 1.0
+
+	return animation_length / target_duration
 
 
 func _finish_attack_after_animation() -> void:
