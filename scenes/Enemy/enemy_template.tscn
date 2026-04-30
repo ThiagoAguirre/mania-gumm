@@ -4,11 +4,14 @@
 [ext_resource type="Script" uid="uid://dfjvs7a8vqirf" path="res://scripts/Enemy/enemy_texture.gd" id="2_qwg4h"]
 [ext_resource type="Script" uid="uid://d1muhdpn30fae" path="res://scripts/Enemy/detection_area.gd" id="3_1gi7g"]
 
-[node name="EnemyTemplate" type="Node2D" unique_id=1191673170]
+[node name="EnemyTemplate" type="CharacterBody2D" unique_id=1191673170]
 script = ExtResource("1_3kb6q")
 
-[node name="Texture" type="Sprite2D" parent="." unique_id=1254213782]
+[node name="Texture" type="Sprite2D" parent="." unique_id=1254213782 node_paths=PackedStringArray("attack_area_collision", "animation", "enemy")]
 script = ExtResource("2_qwg4h")
+attack_area_collision = NodePath("../AttackArea/CollisionShape2D2")
+animation = NodePath("../Animation")
+enemy = NodePath("..")
 
 [node name="Collision" type="CollisionShape2D" parent="." unique_id=778480925]
 
