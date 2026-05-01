@@ -1075,7 +1075,7 @@ tracks/8/keys = {
 }
 tracks/9/type = "value"
 tracks/9/imported = false
-tracks/9/enabled = true
+tracks/9/enabled = false
 tracks/9/path = NodePath("AttackArea/CollisionAttack:disabled")
 tracks/9/interp = 1
 tracks/9/loop_wrap = true
@@ -2136,7 +2136,7 @@ shape = SubResource("RectangleShape2D_myrg7")
 limit_top = 0
 
 [node name="AttackArea" type="Area2D" parent="." unique_id=694246251]
-collision_layer = 0
+collision_layer = 4
 collision_mask = 8
 
 [node name="CollisionAttack" type="CollisionShape2D" parent="AttackArea" unique_id=1410627110]

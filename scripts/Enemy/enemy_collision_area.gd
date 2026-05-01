@@ -14,6 +14,7 @@ var last_attack_sequence_by_player: Dictionary = {}
 
 
 func _ready() -> void:
+	print('teste')
 	if enemy == null:
 		enemy = get_parent() as CharacterBody2D
 
@@ -25,6 +26,7 @@ func _ready() -> void:
 		timer.timeout.connect(timeout_callable)
 
 func on_area_entered(area: Area2D) -> void:
+	print("ENTROU NO AREA_ENTERED. Area: ", area.name)
 	if is_invulnerable or health <= 0:
 		return
 
@@ -57,18 +59,25 @@ func on_area_entered(area: Area2D) -> void:
 
 func update_health(damage: int) -> void:
 	print("INIMIGO TOMOU DANO: ", damage, " | VIDA ANTES: ", health)
+
 	health -= damage
-	if enemy_bar != null and enemy_bar.has_method("update_bar"):
-		enemy_bar.update_bar(health)
-	
+
+	print("VIDA DEPOIS: ", health)
+	enemy.can_hit = true
+	enemy.set_physics_process(false)
+
+	var enemy_texture: Node = enemy.get_node_or_null("Texture")
+	if enemy_texture != null and enemy_texture.has_method("play_hit_reaction"):
+		enemy_texture.call("play_hit_reaction")
+
 	if health <= 0:
-		enemy.can_die = true
+		print("MORTE AGENDADA APOS HIT")
 		return
+
+	print("AINDA VIVO. Vida atual: ", health)
 
 	is_invulnerable = true
 	timer.start()
-	enemy.can_hit = true
-	enemy.set_physics_process(false)
 
 
 func _on_timer_timeout() -> void:

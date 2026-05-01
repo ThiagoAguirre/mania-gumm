@@ -9,6 +9,10 @@ signal death_finished
 signal game_over
 
 @export var animation_player_path: NodePath = ^"../AnimationPlayer"
+@export var attack_area_path: NodePath = ^"../AttackArea"
+@export var attack_collision_path: NodePath = ^"../AttackArea/CollisionAttack"
+@export var attack_hitbox_start: float = 0.3
+@export var attack_hitbox_end: float = 0.4
 
 @export_group("Animations")
 @export var idle_animation: StringName = &"idle"
@@ -28,6 +32,8 @@ signal game_over
 @export var wall_slide_loop_duration: float = 4.0
 
 @onready var animation_player: AnimationPlayer = get_node_or_null(animation_player_path) as AnimationPlayer
+@onready var attack_area: Area2D = get_node_or_null(attack_area_path) as Area2D
+@onready var collision_attack: CollisionShape2D = get_node_or_null(attack_collision_path) as CollisionShape2D
 
 var is_attacking: bool = false
 var is_hurt: bool = false
@@ -45,6 +51,7 @@ func _ready() -> void:
 		animation_player.animation_finished.connect(_on_animation_finished)
 		configure_wall_animation_loops()
 	configure_life_animation_loops()
+	disable_attack_hitbox()
 
 
 func animate(facing_velocity: Vector2, current_velocity: Vector2, input_direction: float, is_crouching: bool, on_floor: bool) -> void:
@@ -125,7 +132,9 @@ func play_attack() -> bool:
 
 	attack_sequence += 1
 	is_attacking = true
+	disable_attack_hitbox()
 	play_animation(punch_animation, true)
+	_run_attack_hitbox_window(attack_sequence)
 	_finish_attack_after_animation()
 	return true
 
@@ -137,6 +146,7 @@ func play_hurt() -> bool:
 	is_attacking = false
 	is_hurt = true
 	stop_wall_animation()
+	disable_attack_hitbox()
 	play_life_animation(hurt_animation)
 	return true
 
@@ -149,6 +159,7 @@ func play_death() -> bool:
 	is_hurt = false
 	is_dead = true
 	stop_wall_animation()
+	disable_attack_hitbox()
 	play_life_animation(death_animation)
 	return true
 
@@ -362,6 +373,7 @@ func _finish_attack() -> void:
 		return
 
 	is_attacking = false
+	disable_attack_hitbox()
 	attack_finished.emit()
 
 
@@ -391,3 +403,40 @@ func _on_sprite_animation_finished() -> void:
 		finish_life_animation(hurt_animation)
 	elif animation == death_animation:
 		finish_life_animation(death_animation)
+
+
+func _run_attack_hitbox_window(current_attack_sequence: int) -> void:
+	await get_tree().create_timer(attack_hitbox_start).timeout
+	if current_attack_sequence != attack_sequence or not is_attacking:
+		return
+
+	enable_attack_hitbox()
+
+	var active_duration: float = maxf(attack_hitbox_end - attack_hitbox_start, 0.0)
+	if active_duration <= 0.0:
+		disable_attack_hitbox()
+		return
+
+	await get_tree().create_timer(active_duration).timeout
+	if current_attack_sequence != attack_sequence:
+		return
+
+	disable_attack_hitbox()
+
+
+func disable_attack_hitbox() -> void:
+	if attack_area != null:
+		attack_area.set_deferred("monitoring", false)
+		attack_area.set_deferred("monitorable", false)
+
+	if collision_attack != null:
+		collision_attack.set_deferred("disabled", true)
+
+
+func enable_attack_hitbox() -> void:
+	if attack_area != null:
+		attack_area.set_deferred("monitoring", true)
+		attack_area.set_deferred("monitorable", true)
+
+	if collision_attack != null:
+		collision_attack.set_deferred("disabled", false)

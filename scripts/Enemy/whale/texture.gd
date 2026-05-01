@@ -1,6 +1,8 @@
 extends EnemyTexture
 class_name WhaleTexture
 
+@onready var collision_area: CollisionArea = get_node_or_null("../CollisionArea") as CollisionArea
+
 func animate(velocity: Vector2) -> void:
 	if enemy == null or animation == null:
 		return
@@ -44,7 +46,11 @@ func on_animation_finished(anim_name: String) -> void:
 		"hit":
 			set_attack_hitbox_enabled(false)
 			enemy.can_hit = false
-			enemy.set_physics_process(true)
+			if collision_area != null and collision_area.health <= 0:
+				enemy.can_die = true
+				play_action("dead")
+			else:
+				enemy.set_physics_process(true)
 			
 		"dead":
 			set_attack_hitbox_enabled(false)
@@ -67,6 +73,12 @@ func play_action(animation_name: String) -> void:
 		return
 
 	animation.play(animation_name)
+
+
+func play_hit_reaction() -> void:
+	set_attack_hitbox_enabled(false)
+	play_action("hit")
+	enemy.can_attack = false
 
 
 func set_attack_hitbox_enabled(is_enabled: bool) -> void:
