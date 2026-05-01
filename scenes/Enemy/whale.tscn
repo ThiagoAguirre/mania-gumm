@@ -5,6 +5,15 @@
 [ext_resource type="Script" uid="uid://dtl8kr7e1nekx" path="res://scripts/Enemy/whale/texture.gd" id="3_7xmea"]
 [ext_resource type="Texture2D" uid="uid://bw82ryajhx2ps" path="res://assets/enemy/whale/run.png" id="4_emfm8"]
 
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_vwlxs"]
+size = Vector2(67, 37)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_7xmea"]
+size = Vector2(390, 35)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_emfm8"]
+size = Vector2(65, 36)
+
 [sub_resource type="Animation" id="Animation_0216e"]
 length = 0.001
 tracks/0/type = "value"
@@ -207,12 +216,38 @@ _data = {
 }
 
 [node name="Whale" unique_id=1191673170 instance=ExtResource("1_5184c")]
+scale = Vector2(0.4, 0.4)
+speed = 60
+gravity_speed = 350
+proximity_threshold = 15
+raycast_default_position = -33
 
 [node name="Texture" parent="." index="0" unique_id=1254213782]
 texture = ExtResource("2_vwlxs")
 hframes = 44
 script = ExtResource("3_7xmea")
 
+[node name="Collision" parent="." index="1" unique_id=778480925]
+visible = false
+position = Vector2(1.5, 4.5)
+shape = SubResource("RectangleShape2D_vwlxs")
+
+[node name="DetectionArea" parent="." index="2" unique_id=1011719582]
+collision_layer = 0
+
+[node name="CollisionShape2D2" parent="DetectionArea" index="0" unique_id=514824758]
+position = Vector2(4, 4.5)
+shape = SubResource("RectangleShape2D_7xmea")
+
+[node name="CollisionShape2D2" parent="CollisionArea" parent_id_path=PackedInt32Array(752842965) index="0" unique_id=1212378692]
+visible = false
+position = Vector2(0.5, 5)
+shape = SubResource("RectangleShape2D_emfm8")
+
 [node name="Animation" parent="." index="5" unique_id=1841468468]
 libraries/ = SubResource("AnimationLibrary_6qtgm")
 speed_scale = 2.0
+
+[node name="floorRay" parent="." index="6" unique_id=2141643125]
+position = Vector2(-29, 2)
+target_position = Vector2(0, 32)

@@ -18,12 +18,12 @@ var drop_list: Dictionary
 var player_ref: Player = null
 
 @export var speed: int
-@export var enemy_exp: int
+# @export var enemy_exp: int
 @export var gravity_speed: int
 @export var proximity_threshold: int
 @export var raycast_default_position: int
 
-@export var floating_text: PackedScene
+# @export var floating_text: PackedScene
 
 func _physics_process(delta: float) -> void:
 	gravity(delta)
@@ -74,54 +74,7 @@ func verify_position() -> void:
 			texture.flip_h = false
 			attack_animation_suffix = "_left"
 			floor_ray.position.x = raycast_default_position
-			
-			
-func kill_enemy() -> void:
-	emit_signal("kill")
-	animation.play("kill")
-	get_tree().call_group("player_stats", "update_exp", enemy_exp)
-	spawn_item_probability()
 	
 	
-func spawn_item_probability() -> void:
-	var random_number: int = randi() % 21
-	if random_number <= 6:
-		drop_bonus = 1
-	elif random_number >= 7 and random_number <= 13:
-		drop_bonus = 2
-	else:
-		drop_bonus = 3
-		
-	print("Multiplicador de Drop: " + str(drop_bonus))
-	for key in drop_list.keys():
-		var rng: int = randi() % 100 + 1
-		if rng <= drop_list[key][1] * drop_bonus:
-			var item_texture: CompressedTexture2D = load(drop_list[key][0])
-			var item_info: Array = [
-				drop_list[key][0], 
-				drop_list[key][2], 
-				drop_list[key][3], 
-				drop_list[key][4], 
-				1
-			]
-			
-			spawn_physic_item(key, item_texture, item_info)
-			
-			
-func spawn_physic_item(key: String, item_texture: CompressedTexture2D, item_info: Array) -> void:
-	var physic_item_scene = load("res://scenes/env/physic_item.tscn")
-	var item: PhysicItem = physic_item_scene.instantiate()
-	get_parent().call_deferred("add_child", item)
-	item.global_position = position
-	item.update_item_info(key, item_texture, item_info)
+
 	
-	
-func spawn_floating_text(type_sign: String, type: String, value: int) -> void:
-	var text: FloatText = floating_text.instantiate()
-	text.global_position = global_position
-	
-	text.type = type
-	text.value = value
-	text.type_sign = type_sign
-	
-	get_tree().root.call_deferred("add_child", text)

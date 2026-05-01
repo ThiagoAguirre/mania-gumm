@@ -1,8 +1,6 @@
 extends CharacterBody2D
 class_name Player
 
-signal game_over_requested
-
 @export var speed: int = 150
 @export var jump_velocity: float = -300.0
 @export var gravity: float = float(ProjectSettings.get_setting("physics/2d/default_gravity"))
@@ -17,7 +15,6 @@ signal game_over_requested
 @export var invulnerability_time: float = 1.5
 @export var hurt_knockback_force: Vector2 = Vector2(90.0, -60.0)
 @export var hurt_control_lock_time: float = 0.2
-@export_file("*.tscn") var game_over_scene_path: String = ""
 
 @onready var player_animations: PlayerAnimations = get_node_or_null(sprite_path) as PlayerAnimations
 @onready var stats: PlayerStats = get_node_or_null(stats_path) as PlayerStats
@@ -42,18 +39,28 @@ var damage_knockback_side: int = -1
 
 func _ready() -> void:
 	if player_animations != null:
-		player_animations.landing_finished.connect(_on_landing_finished)
-		player_animations.wall_land_finished.connect(_on_wall_land_finished)
-		player_animations.death_finished.connect(_on_death_finished)
+		var landing_callable: Callable = Callable(self, "_on_landing_finished")
+		if not player_animations.landing_finished.is_connected(landing_callable):
+			player_animations.landing_finished.connect(landing_callable)
+
+		var wall_land_callable: Callable = Callable(self, "_on_wall_land_finished")
+		if not player_animations.wall_land_finished.is_connected(wall_land_callable):
+			player_animations.wall_land_finished.connect(wall_land_callable)
 
 	if stats != null:
-		stats.damaged.connect(_on_stats_damaged)
-		stats.died.connect(_on_stats_died)
+		var damaged_callable: Callable = Callable(self, "_on_stats_damaged")
+		if not stats.damaged.is_connected(damaged_callable):
+			stats.damaged.connect(damaged_callable)
+
+		var died_callable: Callable = Callable(self, "_on_stats_died")
+		if not stats.died.is_connected(died_callable):
+			stats.died.connect(died_callable)
 
 	if wall_detector != null:
 		wall_detector.enabled = true
 		wall_detector_base_position = wall_detector.position
 		wall_detector_base_target = wall_detector.target_position
+
 
 
 func _physics_process(delta: float) -> void:
@@ -62,7 +69,7 @@ func _physics_process(delta: float) -> void:
 		return
 
 	if stats != null and stats.current_health <= 0:
-		start_death()
+		enter_dead_state()
 		death_movement(delta)
 		return
 
@@ -401,7 +408,7 @@ func apply_hurt_knockback() -> void:
 	velocity.y = minf(velocity.y, hurt_knockback_force.y)
 
 
-func start_death() -> void:
+func enter_dead_state() -> void:
 	if is_dead:
 		return
 
@@ -412,9 +419,6 @@ func start_death() -> void:
 	stop_wall_state()
 	is_landing = false
 	velocity.x = 0.0
-
-	if player_animations == null or not player_animations.play_death():
-		_on_death_finished()
 
 
 func _on_landing_finished() -> void:
@@ -435,7 +439,7 @@ func _on_wall_land_finished(side: int) -> void:
 
 func _on_stats_damaged(_damage_taken: int, current_health: int, _max_health: int) -> void:
 	if current_health <= 0:
-		start_death()
+		enter_dead_state()
 		return
 
 	start_invulnerability()
@@ -446,13 +450,4 @@ func _on_stats_damaged(_damage_taken: int, current_health: int, _max_health: int
 
 
 func _on_stats_died() -> void:
-	start_death()
-
-
-func _on_death_finished() -> void:
-	game_over_requested.emit()
-
-	if game_over_scene_path != "":
-		get_tree().change_scene_to_file(game_over_scene_path)
-	else:
-		get_tree().reload_current_scene()
+	enter_dead_state()
