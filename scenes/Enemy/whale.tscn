@@ -3,7 +3,10 @@
 [ext_resource type="PackedScene" uid="uid://uba3ldexp4vq" path="res://scenes/Enemy/enemy_template.tscn" id="1_5184c"]
 [ext_resource type="Texture2D" uid="uid://b88l2re8pyrc2" path="res://assets/enemy/whale/idle.png" id="2_vwlxs"]
 [ext_resource type="Script" uid="uid://dtl8kr7e1nekx" path="res://scripts/Enemy/whale/texture.gd" id="3_7xmea"]
+[ext_resource type="Texture2D" uid="uid://b1yoeso2cr4e7" path="res://assets/enemy/whale/attack.png" id="4_0216e"]
 [ext_resource type="Texture2D" uid="uid://bw82ryajhx2ps" path="res://assets/enemy/whale/run.png" id="4_emfm8"]
+[ext_resource type="Texture2D" uid="uid://7hpcvoee8hw3" path="res://assets/enemy/whale/dead.png" id="5_q5pu8"]
+[ext_resource type="Texture2D" uid="uid://cdiao1ox122qb" path="res://assets/enemy/whale/hit.png" id="6_ef3vg"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_vwlxs"]
 size = Vector2(67, 37)
@@ -13,6 +16,9 @@ size = Vector2(390, 35)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_emfm8"]
 size = Vector2(65, 36)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_6qtgm"]
+size = Vector2(65.000015, 42.5)
 
 [sub_resource type="Animation" id="Animation_0216e"]
 length = 0.001
@@ -75,6 +81,205 @@ tracks/4/keys = {
 "transitions": PackedFloat32Array(1),
 "update": 0,
 "values": [2.0]
+}
+tracks/5/type = "value"
+tracks/5/imported = false
+tracks/5/enabled = true
+tracks/5/path = NodePath("..:modulate")
+tracks/5/interp = 1
+tracks/5/loop_wrap = true
+tracks/5/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Color(1, 1, 1, 1)]
+}
+
+[sub_resource type="Animation" id="Animation_7jjqv"]
+resource_name = "attack"
+length = 1.1
+step = 0.1
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath(".:texture")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [ExtResource("4_0216e")]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath(".:hframes")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [11]
+}
+tracks/2/type = "value"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath(".:vframes")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [1]
+}
+tracks/3/type = "value"
+tracks/3/imported = false
+tracks/3/enabled = true
+tracks/3/path = NodePath(".:frame")
+tracks/3/interp = 1
+tracks/3/loop_wrap = true
+tracks/3/keys = {
+"times": PackedFloat32Array(0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.90000004, 1),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1),
+"update": 1,
+"values": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+}
+
+[sub_resource type="Animation" id="Animation_gnxrc"]
+resource_name = "dead"
+length = 0.4
+step = 0.1
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath(".:texture")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [ExtResource("5_q5pu8")]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath(".:hframes")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [4]
+}
+tracks/2/type = "value"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath(".:vframes")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [1]
+}
+tracks/3/type = "value"
+tracks/3/imported = false
+tracks/3/enabled = true
+tracks/3/path = NodePath(".:frame")
+tracks/3/interp = 1
+tracks/3/loop_wrap = true
+tracks/3/keys = {
+"times": PackedFloat32Array(0, 0.1, 0.2, 0.3),
+"transitions": PackedFloat32Array(1, 1, 1, 1),
+"update": 1,
+"values": [0, 1, 2, 3]
+}
+tracks/4/type = "method"
+tracks/4/imported = false
+tracks/4/enabled = true
+tracks/4/path = NodePath("..")
+tracks/4/interp = 1
+tracks/4/loop_wrap = true
+tracks/4/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"values": [{
+"args": [false],
+"method": &"set_physics_process"
+}]
+}
+
+[sub_resource type="Animation" id="Animation_eugn5"]
+resource_name = "hit"
+length = 0.8
+step = 0.1
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath(".:texture")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [ExtResource("6_ef3vg")]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath(".:hframes")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [7]
+}
+tracks/2/type = "value"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath(".:vframes")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [1]
+}
+tracks/3/type = "value"
+tracks/3/imported = false
+tracks/3/enabled = true
+tracks/3/path = NodePath(".:frame")
+tracks/3/interp = 1
+tracks/3/loop_wrap = true
+tracks/3/keys = {
+"times": PackedFloat32Array(0.06666667, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1, 1),
+"update": 1,
+"values": [0, 1, 2, 3, 4, 5, 6]
+}
+tracks/4/type = "method"
+tracks/4/imported = false
+tracks/4/enabled = true
+tracks/4/path = NodePath("..")
+tracks/4/interp = 1
+tracks/4/loop_wrap = true
+tracks/4/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"values": [{
+"args": [false],
+"method": &"set_physics_process"
+}]
 }
 
 [sub_resource type="Animation" id="Animation_q5pu8"]
@@ -141,6 +346,85 @@ tracks/4/keys = {
 "transitions": PackedFloat32Array(1),
 "update": 0,
 "values": [2.0]
+}
+
+[sub_resource type="Animation" id="Animation_hsq5y"]
+resource_name = "kill"
+length = 0.4
+step = 0.1
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath(".:texture")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [ExtResource("5_q5pu8")]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath(".:hframes")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [4]
+}
+tracks/2/type = "value"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath(".:vframes")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [1]
+}
+tracks/3/type = "value"
+tracks/3/imported = false
+tracks/3/enabled = true
+tracks/3/path = NodePath(".:frame")
+tracks/3/interp = 1
+tracks/3/loop_wrap = true
+tracks/3/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [3]
+}
+tracks/4/type = "method"
+tracks/4/imported = false
+tracks/4/enabled = true
+tracks/4/path = NodePath("..")
+tracks/4/interp = 1
+tracks/4/loop_wrap = true
+tracks/4/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"values": [{
+"args": [false],
+"method": &"set_physics_process"
+}]
+}
+tracks/5/type = "value"
+tracks/5/imported = false
+tracks/5/enabled = true
+tracks/5/path = NodePath("..:modulate")
+tracks/5/interp = 1
+tracks/5/loop_wrap = true
+tracks/5/keys = {
+"times": PackedFloat32Array(0, 0.3977534),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [Color(1, 1, 1, 1), Color(1, 1, 1, 0)]
 }
 
 [sub_resource type="Animation" id="Animation_ef3vg"]
@@ -211,13 +495,17 @@ tracks/4/keys = {
 [sub_resource type="AnimationLibrary" id="AnimationLibrary_6qtgm"]
 _data = {
 &"RESET": SubResource("Animation_0216e"),
+&"attack": SubResource("Animation_7jjqv"),
+&"dead": SubResource("Animation_gnxrc"),
+&"hit": SubResource("Animation_eugn5"),
 &"idle": SubResource("Animation_q5pu8"),
+&"kill": SubResource("Animation_hsq5y"),
 &"run": SubResource("Animation_ef3vg")
 }
 
 [node name="Whale" unique_id=1191673170 instance=ExtResource("1_5184c")]
 scale = Vector2(0.4, 0.4)
-speed = 60
+speed = 45
 gravity_speed = 350
 proximity_threshold = 15
 raycast_default_position = -33
@@ -228,7 +516,6 @@ hframes = 44
 script = ExtResource("3_7xmea")
 
 [node name="Collision" parent="." index="1" unique_id=778480925]
-visible = false
 position = Vector2(1.5, 4.5)
 shape = SubResource("RectangleShape2D_vwlxs")
 
@@ -236,13 +523,22 @@ shape = SubResource("RectangleShape2D_vwlxs")
 collision_layer = 0
 
 [node name="CollisionShape2D2" parent="DetectionArea" index="0" unique_id=514824758]
+visible = false
 position = Vector2(4, 4.5)
 shape = SubResource("RectangleShape2D_7xmea")
 
-[node name="CollisionShape2D2" parent="CollisionArea" parent_id_path=PackedInt32Array(752842965) index="0" unique_id=1212378692]
+[node name="CollisionArea" parent="." index="3" unique_id=752842965]
+health = 15
+
+[node name="CollisionShape2D2" parent="CollisionArea" index="0" unique_id=1212378692]
 visible = false
 position = Vector2(0.5, 5)
 shape = SubResource("RectangleShape2D_emfm8")
+
+[node name="CollisionShape2D2" parent="AttackArea" parent_id_path=PackedInt32Array(716694628) index="0" unique_id=193596456]
+position = Vector2(-2.1457665e-06, 3.7500002)
+scale = Vector2(0.99999976, 0.99999976)
+shape = SubResource("RectangleShape2D_6qtgm")
 
 [node name="Animation" parent="." index="5" unique_id=1841468468]
 libraries/ = SubResource("AnimationLibrary_6qtgm")

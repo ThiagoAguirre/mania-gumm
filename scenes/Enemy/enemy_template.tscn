@@ -3,6 +3,7 @@
 [ext_resource type="Script" uid="uid://n0aebpoynv57" path="res://scripts/Enemy/enemy_template.gd" id="1_3kb6q"]
 [ext_resource type="Script" uid="uid://dfjvs7a8vqirf" path="res://scripts/Enemy/enemy_texture.gd" id="2_qwg4h"]
 [ext_resource type="Script" uid="uid://d1muhdpn30fae" path="res://scripts/Enemy/detection_area.gd" id="3_1gi7g"]
+[ext_resource type="Script" uid="uid://c8ka3oegajqjg" path="res://scripts/Enemy/enemy_collision_area.gd" id="4_qwg4h"]
 
 [node name="EnemyTemplate" type="CharacterBody2D" unique_id=1191673170]
 collision_layer = 8
@@ -17,6 +18,7 @@ enemy = NodePath("..")
 [node name="Collision" type="CollisionShape2D" parent="." unique_id=778480925]
 
 [node name="DetectionArea" type="Area2D" parent="." unique_id=1011719582]
+collision_mask = 4
 script = ExtResource("3_1gi7g")
 
 [node name="CollisionShape2D2" type="CollisionShape2D" parent="DetectionArea" unique_id=514824758]
@@ -24,8 +26,13 @@ script = ExtResource("3_1gi7g")
 [node name="CollisionArea" type="Area2D" parent="." unique_id=752842965]
 collision_layer = 8
 collision_mask = 0
+script = ExtResource("4_qwg4h")
+health = 10
+invulnerability_timer = 0.5
 
 [node name="CollisionShape2D2" type="CollisionShape2D" parent="CollisionArea" unique_id=1212378692]
+
+[node name="Timer" type="Timer" parent="CollisionArea" unique_id=2146277256]
 
 [node name="AttackArea" type="Area2D" parent="." unique_id=716694628]
 collision_layer = 0
@@ -37,3 +44,5 @@ collision_mask = 4
 root_node = NodePath("../Texture")
 
 [node name="floorRay" type="RayCast2D" parent="." unique_id=2141643125]
+
+[connection signal="area_entered" from="CollisionArea" to="CollisionArea" method="on_area_entered"]

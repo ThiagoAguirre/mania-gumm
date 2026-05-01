@@ -51,8 +51,10 @@ func _ready() -> void:
 	if player == null:
 		player = get_parent() as Player
 
-	if collision_area == null and get_parent() != null:
-		collision_area = get_parent().get_node_or_null("CollisionArea") as Area2D
+	if get_parent() != null:
+		var resolved_collision_area: Area2D = get_parent().get_node_or_null("CollisionArea") as Area2D
+		if resolved_collision_area != null:
+			collision_area = resolved_collision_area
 
 	recalculate_stats(true)
 	_connect_player_signals()

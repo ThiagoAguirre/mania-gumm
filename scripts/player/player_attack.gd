@@ -6,8 +6,6 @@ extends CollisionShape2D
 
 @onready var player_animations: PlayerAnimations = get_node_or_null(animations_path) as PlayerAnimations
 
-var attack_id: int = 0
-
 
 func _ready() -> void:
 	disabled = true
@@ -24,22 +22,3 @@ func attack() -> void:
 
 	if not player_animations.play_attack():
 		return
-
-	attack_id += 1
-	run_hitbox_window(attack_id)
-
-
-func run_hitbox_window(current_attack_id: int) -> void:
-	disabled = true
-
-	await get_tree().create_timer(hitbox_delay).timeout
-	if current_attack_id != attack_id:
-		return
-
-	disabled = false
-
-	await get_tree().create_timer(hitbox_duration).timeout
-	if current_attack_id != attack_id:
-		return
-
-	disabled = true

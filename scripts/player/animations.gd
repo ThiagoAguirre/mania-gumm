@@ -9,7 +9,6 @@ signal death_finished
 signal game_over
 
 @export var animation_player_path: NodePath = ^"../AnimationPlayer"
-@export var stats_path: NodePath = ^"../Stats"
 
 @export_group("Animations")
 @export var idle_animation: StringName = &"idle"
@@ -29,7 +28,6 @@ signal game_over
 @export var wall_slide_loop_duration: float = 4.0
 
 @onready var animation_player: AnimationPlayer = get_node_or_null(animation_player_path) as AnimationPlayer
-@onready var stats: PlayerStats = get_node_or_null(stats_path) as PlayerStats
 
 var is_attacking: bool = false
 var is_hurt: bool = false
@@ -37,6 +35,7 @@ var is_dead: bool = false
 var is_wall_landing: bool = false
 var is_wall_sliding: bool = false
 var current_wall_side: int = 0
+var attack_sequence: int = 0
 
 
 func _ready() -> void:
@@ -46,10 +45,6 @@ func _ready() -> void:
 		animation_player.animation_finished.connect(_on_animation_finished)
 		configure_wall_animation_loops()
 	configure_life_animation_loops()
-	_connect_stats_signals()
-
-	if stats != null and stats.current_health <= 0:
-		_on_stats_health_changed(stats.current_health, stats.max_health)
 
 
 func animate(facing_velocity: Vector2, current_velocity: Vector2, input_direction: float, is_crouching: bool, on_floor: bool) -> void:
@@ -57,6 +52,9 @@ func animate(facing_velocity: Vector2, current_velocity: Vector2, input_directio
 		return
 
 	if is_wall_landing or is_wall_sliding:
+		return
+
+	if is_attacking:
 		return
 
 	verify_position(facing_velocity)
@@ -125,6 +123,7 @@ func play_attack() -> bool:
 	if not has_animation(punch_animation):
 		return false
 
+	attack_sequence += 1
 	is_attacking = true
 	play_animation(punch_animation, true)
 	_finish_attack_after_animation()
@@ -177,7 +176,7 @@ func update_animation(current_velocity: Vector2, input_direction: float, is_crou
 
 
 func should_keep_attack_animation(input_direction: float, is_crouching: bool, on_floor: bool) -> bool:
-	return is_attacking and on_floor and input_direction == 0.0 and not is_crouching
+	return is_attacking
 
 
 func update_crouch_animation(input_direction: float) -> void:
@@ -392,21 +391,3 @@ func _on_sprite_animation_finished() -> void:
 		finish_life_animation(hurt_animation)
 	elif animation == death_animation:
 		finish_life_animation(death_animation)
-
-
-func _connect_stats_signals() -> void:
-	if stats == null:
-		return
-
-	var health_changed_callable: Callable = Callable(self, "_on_stats_health_changed")
-	if not stats.health_changed.is_connected(health_changed_callable):
-		stats.health_changed.connect(health_changed_callable)
-
-
-func _on_stats_health_changed(current_health: int, _max_health: int) -> void:
-	if current_health > 0 or is_dead:
-		return
-
-	if not play_death():
-		death_finished.emit()
-		game_over.emit()

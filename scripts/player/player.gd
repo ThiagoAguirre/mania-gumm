@@ -128,11 +128,18 @@ func horizontal_movement_env(input_direction: float) -> void:
 	if wall_jump_control_lock_timer > 0.0:
 		return
 
+	if player_animations != null and player_animations.is_attacking:
+		velocity.x = 0.0
+		return
+
 	velocity.x = input_direction * speed
 
 
 func handle_jump_input(jump_pressed: bool) -> void:
 	if not jump_pressed:
+		return
+
+	if player_animations != null and player_animations.is_attacking:
 		return
 
 	if is_wall_landing or is_wall_sliding:
@@ -440,6 +447,8 @@ func _on_wall_land_finished(side: int) -> void:
 func _on_stats_damaged(_damage_taken: int, current_health: int, _max_health: int) -> void:
 	if current_health <= 0:
 		enter_dead_state()
+		if player_animations != null:
+			player_animations.play_death()
 		return
 
 	start_invulnerability()
@@ -451,3 +460,5 @@ func _on_stats_damaged(_damage_taken: int, current_health: int, _max_health: int
 
 func _on_stats_died() -> void:
 	enter_dead_state()
+	if player_animations != null:
+		player_animations.play_death()

@@ -1251,6 +1251,101 @@ tracks/5/keys = {
 "values": [Vector2(-1, 3.3)]
 }
 
+[sub_resource type="Animation" id="Animation_cnsyf"]
+resource_name = "death"
+step = 0.1
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("AnimatedSprite2D:sprite_frames")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [SubResource("SpriteFrames_lclul")]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("AnimatedSprite2D:animation")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [&"death"]
+}
+tracks/2/type = "value"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath("AnimatedSprite2D:frame")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"times": PackedFloat32Array(0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.90000004),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1, 1, 1, 1, 1),
+"update": 1,
+"values": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+}
+tracks/3/type = "method"
+tracks/3/imported = false
+tracks/3/enabled = true
+tracks/3/path = NodePath(".")
+tracks/3/interp = 1
+tracks/3/loop_wrap = true
+tracks/3/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"values": [{
+"args": [false],
+"method": &"set_physics_process"
+}]
+}
+
+[sub_resource type="Animation" id="Animation_007i1"]
+resource_name = "hurt"
+length = 0.4
+step = 0.1
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("AnimatedSprite2D:sprite_frames")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [SubResource("SpriteFrames_lclul")]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("AnimatedSprite2D:animation")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [&"hurt"]
+}
+tracks/2/type = "value"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath("AnimatedSprite2D:frame")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"times": PackedFloat32Array(0, 0.1, 0.2, 0.3),
+"transitions": PackedFloat32Array(1, 1, 1, 1),
+"update": 1,
+"values": [0, 1, 2, 3]
+}
+
 [sub_resource type="Animation" id="Animation_h17s1"]
 resource_name = "idle"
 loop_mode = 1
@@ -2009,6 +2104,8 @@ _data = {
 &"RESET": SubResource("Animation_qek5x"),
 &"crouch_idle": SubResource("Animation_5gtgg"),
 &"crouch_walk": SubResource("Animation_ugbui"),
+&"death": SubResource("Animation_cnsyf"),
+&"hurt": SubResource("Animation_007i1"),
 &"idle": SubResource("Animation_h17s1"),
 &"jump": SubResource("Animation_je7p5"),
 &"landing": SubResource("Animation_fm80t"),
@@ -2043,7 +2140,6 @@ collision_layer = 0
 collision_mask = 8
 
 [node name="CollisionAttack" type="CollisionShape2D" parent="AttackArea" unique_id=1410627110]
-visible = false
 position = Vector2(-2.5, 0.5)
 shape = SubResource("RectangleShape2D_gmlin")
 disabled = true
@@ -2061,10 +2157,20 @@ libraries/ = SubResource("AnimationLibrary_bysbl")
 position = Vector2(0, -9)
 target_position = Vector2(14, 0)
 
-[node name="Stats" type="Node" parent="." unique_id=509938653]
+[node name="Stats" type="Node" parent="." unique_id=509938653 node_paths=PackedStringArray("player", "collision_area")]
 script = ExtResource("21_3j4b4")
+base_attack = 4
+bonus_health = 1
+bonus_mana = 1
+bonus_magic_attack = 1
+bonus_defense = 1
+player = NodePath("..")
+collision_area = NodePath("../CollisionArea")
+
+[node name="Invencibility" type="Timer" parent="Stats" unique_id=1624719952]
 
 [node name="CollisionArea" type="Area2D" parent="." unique_id=574085609]
+visible = false
 collision_layer = 0
 collision_mask = 8
 
