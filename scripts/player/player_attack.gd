@@ -11,8 +11,8 @@ func _ready() -> void:
 	disabled = true
 
 
-func _unhandled_input(event: InputEvent) -> void:
-	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_RIGHT and event.pressed:
+func _unhandled_input(_event: InputEvent) -> void:
+	if Input.is_action_just_pressed("attack"):
 		attack()
 
 

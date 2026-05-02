@@ -38,11 +38,18 @@ func on_screen_exited():
 	queue_free()
 	
 	
-func on_body_entered(body: Player):
-	player_ref = body
+func on_body_entered(body: Node) -> void:
+	var player: Player = body as Player
+	if player == null:
+		return
+
+	player_ref = player
 	
 	
-func on_body_exited(_body: Player):
+func on_body_exited(body: Node) -> void:
+	if body != player_ref:
+		return
+
 	player_ref = null
 	
 func _process(_delta: float) -> void:

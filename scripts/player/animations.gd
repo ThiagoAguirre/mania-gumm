@@ -42,6 +42,7 @@ var is_wall_landing: bool = false
 var is_wall_sliding: bool = false
 var current_wall_side: int = 0
 var attack_sequence: int = 0
+var attack_area_base_scale: Vector2 = Vector2.ONE
 
 
 func _ready() -> void:
@@ -51,6 +52,9 @@ func _ready() -> void:
 		animation_player.animation_finished.connect(_on_animation_finished)
 		configure_wall_animation_loops()
 	configure_life_animation_loops()
+	if attack_area != null:
+		attack_area_base_scale = attack_area.scale
+	update_attack_hitbox_direction()
 	disable_attack_hitbox()
 
 
@@ -73,6 +77,8 @@ func verify_position(current_velocity: Vector2) -> void:
 		flip_h = false
 	elif current_velocity.x < 0.0:
 		flip_h = true
+
+	update_attack_hitbox_direction()
 
 
 func play_landing() -> void:
@@ -132,6 +138,7 @@ func play_attack() -> bool:
 
 	attack_sequence += 1
 	is_attacking = true
+	update_attack_hitbox_direction()
 	disable_attack_hitbox()
 	play_animation(punch_animation, true)
 	_run_attack_hitbox_window(attack_sequence)
@@ -285,6 +292,16 @@ func get_wall_slide_animation(side: int) -> StringName:
 
 func reset_wall_flip() -> void:
 	flip_h = false
+	update_attack_hitbox_direction()
+
+
+func update_attack_hitbox_direction() -> void:
+	if attack_area == null:
+		return
+
+	var side: float = -1.0 if flip_h else 1.0
+	var scaled_x: float = absf(attack_area_base_scale.x) * side
+	attack_area.scale = Vector2(scaled_x, attack_area_base_scale.y)
 
 
 func configure_wall_animation_loops() -> void:

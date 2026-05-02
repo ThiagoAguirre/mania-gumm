@@ -17,8 +17,10 @@ script = ExtResource("1_vrnq8")
 shape = SubResource("CircleShape2D_vrnq8")
 
 [node name="Texture" type="Sprite2D" parent="." unique_id=1963546224]
+scale = Vector2(0.3, 0.3)
 
 [node name="InterectionArea" type="Area2D" parent="." unique_id=1333460097]
+collision_mask = 4
 
 [node name="Collision" type="CollisionShape2D" parent="InterectionArea" unique_id=1972546142]
 shape = SubResource("CircleShape2D_7efwu")
