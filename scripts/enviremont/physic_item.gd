@@ -3,6 +3,8 @@ class_name PhysicItem
 
 @onready var sprite: Sprite2D = get_node("Texture")
 
+const collect_effect: PackedScene = preload("res://scenes/effect/template/general_effects/collect_item.tscn")
+
 var player_ref: CharacterBody2D = null
 
 var item_name: String
@@ -54,5 +56,11 @@ func on_body_exited(body: Node) -> void:
 	
 func _process(_delta: float) -> void:
 	if player_ref != null and Input.is_action_just_pressed("interact"):
+		spawn_effect()
 		queue_free()
-	
+		
+func spawn_effect() -> void:
+	var collect_effect: EffectTemplate = collect_effect.instantiate()
+	get_tree().root.call_deferred("add_child", collect_effect)
+	collect_effect.global_position = global_position
+	collect_effect.play_effect()

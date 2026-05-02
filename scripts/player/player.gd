@@ -462,3 +462,12 @@ func _on_stats_died() -> void:
 	enter_dead_state()
 	if player_animations != null:
 		player_animations.play_death()
+		
+func spawn_effect(effect_path: String, offset: Vector2, is_flipped: bool) -> void:
+	var effect_instance: EffectTemplate = load(effect_path).instantiate()
+	get_tree().root.call_deferred("add_child", effect_instance)
+	if is_flipped:
+		effect_instance.flip_h = true
+		
+	effect_instance.global_position = global_position + offset
+	effect_instance.play_effect()

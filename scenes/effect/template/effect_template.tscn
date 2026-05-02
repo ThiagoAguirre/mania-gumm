@@ -4,3 +4,5 @@
 
 [node name="EffectTemplate" type="AnimatedSprite2D" unique_id=932744102]
 script = ExtResource("1_nlywk")
+
+[connection signal="animation_finished" from="." to="." method="on_animation_finished"]

@@ -1576,6 +1576,20 @@ tracks/5/keys = {
 "update": 0,
 "values": [Vector2(18, 32)]
 }
+tracks/6/type = "method"
+tracks/6/imported = false
+tracks/6/enabled = false
+tracks/6/path = NodePath(".")
+tracks/6/interp = 1
+tracks/6/loop_wrap = true
+tracks/6/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"values": [{
+"args": ["res://scenes/effect/template/dust/dust.tscn", Vector2(0, 18), false],
+"method": &"spawn_effect"
+}]
+}
 
 [sub_resource type="Animation" id="Animation_2wy34"]
 resource_name = "punch"
