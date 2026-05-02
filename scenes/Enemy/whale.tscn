@@ -1,6 +1,7 @@
 [gd_scene format=3 uid="uid://cr5fs87yjs5jw"]
 
 [ext_resource type="PackedScene" uid="uid://uba3ldexp4vq" path="res://scenes/Enemy/enemy_template.tscn" id="1_5184c"]
+[ext_resource type="Script" uid="uid://cndfjfli6v354" path="res://scripts/Enemy/whale/whale.gd" id="2_q5pu8"]
 [ext_resource type="Texture2D" uid="uid://b88l2re8pyrc2" path="res://assets/enemy/whale/idle.png" id="2_vwlxs"]
 [ext_resource type="Script" uid="uid://dtl8kr7e1nekx" path="res://scripts/Enemy/whale/texture.gd" id="3_7xmea"]
 [ext_resource type="Texture2D" uid="uid://b1yoeso2cr4e7" path="res://assets/enemy/whale/attack.png" id="4_0216e"]
@@ -505,10 +506,12 @@ _data = {
 
 [node name="Whale" unique_id=1191673170 instance=ExtResource("1_5184c")]
 scale = Vector2(0.4, 0.4)
-speed = 45
+script = ExtResource("2_q5pu8")
+speed = 50
 gravity_speed = 350
-proximity_threshold = 15
-raycast_default_position = -33
+proximity_threshold = 10
+raycast_default_position = -1
+attack_damage = 5
 
 [node name="Texture" parent="." index="0" unique_id=1254213782]
 texture = ExtResource("2_vwlxs")
@@ -523,7 +526,6 @@ shape = SubResource("RectangleShape2D_vwlxs")
 collision_layer = 0
 
 [node name="CollisionShape2D2" parent="DetectionArea" index="0" unique_id=514824758]
-visible = false
 position = Vector2(4, 4.5)
 shape = SubResource("RectangleShape2D_7xmea")
 
@@ -531,7 +533,6 @@ shape = SubResource("RectangleShape2D_7xmea")
 health = 15
 
 [node name="CollisionShape2D2" parent="CollisionArea" index="0" unique_id=1212378692]
-visible = false
 position = Vector2(0.5, 5)
 shape = SubResource("RectangleShape2D_emfm8")
 

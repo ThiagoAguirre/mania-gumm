@@ -1,0 +1,36 @@
+[gd_scene format=3 uid="uid://cq7s3elahfrk2"]
+
+[ext_resource type="Texture2D" uid="uid://d1guh0wnnpl4o" path="res://assets/effect/light.png" id="1_21e8s"]
+[ext_resource type="Script" uid="uid://yohljert3mlu" path="res://scripts/enviremont/physic_item.gd" id="1_vrnq8"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_vrnq8"]
+radius = 8.0
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_7efwu"]
+radius = 16.0
+
+[node name="PhysicItem" type="RigidBody2D" unique_id=1115543049]
+collision_layer = 0
+script = ExtResource("1_vrnq8")
+
+[node name="Collision" type="CollisionShape2D" parent="." unique_id=1033486819]
+shape = SubResource("CircleShape2D_vrnq8")
+
+[node name="Texture" type="Sprite2D" parent="." unique_id=1963546224]
+
+[node name="InterectionArea" type="Area2D" parent="." unique_id=1333460097]
+
+[node name="Collision" type="CollisionShape2D" parent="InterectionArea" unique_id=1972546142]
+shape = SubResource("CircleShape2D_7efwu")
+
+[node name="Notifier" type="VisibleOnScreenNotifier2D" parent="." unique_id=1870051515]
+
+[node name="Light" type="PointLight2D" parent="." unique_id=681104894]
+color = Color(0.007843138, 0, 0, 1)
+energy = 0.5
+texture = ExtResource("1_21e8s")
+texture_scale = 0.2
+
+[connection signal="body_entered" from="InterectionArea" to="." method="on_body_entered"]
+[connection signal="body_exited" from="InterectionArea" to="." method="on_body_exited"]
+[connection signal="screen_exited" from="Notifier" to="." method="on_screen_exited"]

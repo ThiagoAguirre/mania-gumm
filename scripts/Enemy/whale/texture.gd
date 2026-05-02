@@ -14,6 +14,9 @@ func animate(velocity: Vector2) -> void:
 		
 		
 func action_behavior() -> void:
+	if enemy.can_die and not should_die():
+		enemy.can_die = false
+
 	if enemy.can_die:
 		set_attack_hitbox_enabled(false)
 		play_action("dead")
@@ -46,10 +49,11 @@ func on_animation_finished(anim_name: String) -> void:
 		"hit":
 			set_attack_hitbox_enabled(false)
 			enemy.can_hit = false
-			if collision_area != null and collision_area.health <= 0:
+			if should_die():
 				enemy.can_die = true
 				play_action("dead")
 			else:
+				enemy.can_die = false
 				enemy.set_physics_process(true)
 			
 		"dead":
@@ -63,6 +67,13 @@ func on_animation_finished(anim_name: String) -> void:
 		"attack":
 			set_attack_hitbox_enabled(false)
 			enemy.can_attack = false
+
+
+func should_die() -> bool:
+	if collision_area == null:
+		return false
+
+	return collision_area.health <= 0
 
 
 func play_action(animation_name: String) -> void:
@@ -85,4 +96,4 @@ func set_attack_hitbox_enabled(is_enabled: bool) -> void:
 	if attack_area_collision == null:
 		return
 
-	attack_area_collision.disabled = not is_enabled
+	attack_area_collision.set_deferred("disabled", not is_enabled)

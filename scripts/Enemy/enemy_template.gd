@@ -11,6 +11,7 @@ signal kill
 var can_die: bool = false
 var can_hit: bool = false
 var can_attack: bool = false
+var has_processed_kill: bool = false
 
 var drop_bonus: int = 1
 var attack_animation_suffix: String = "_left"
@@ -42,6 +43,11 @@ func _ready() -> void:
 		var animation_finished_callable: Callable = Callable(texture, "on_animation_finished")
 		if not animation.animation_finished.is_connected(animation_finished_callable):
 			animation.animation_finished.connect(animation_finished_callable)
+
+	if animation != null:
+		var enemy_animation_finished_callable: Callable = Callable(self, "_on_animation_finished")
+		if not animation.animation_finished.is_connected(enemy_animation_finished_callable):
+			animation.animation_finished.connect(enemy_animation_finished_callable)
 
 	if attack_area != null:
 		var body_entered_callable: Callable = Callable(self, "_on_attack_area_body_entered")
@@ -97,11 +103,24 @@ func verify_position() -> void:
 
 
 func kill_enemy() -> void:
+	if has_processed_kill:
+		return
+
 	kill.emit()
 	if animation != null and animation.has_animation("kill"):
 		animation.play("kill")
 	else:
+		has_processed_kill = true
+		spawn_item_probability()
 		queue_free()
+
+
+func _on_animation_finished(anim_name: String) -> void:
+	if anim_name != "kill" or has_processed_kill:
+		return
+
+	has_processed_kill = true
+	spawn_item_probability()
 
 
 func _on_attack_area_body_entered(body: Node2D) -> void:
@@ -114,6 +133,42 @@ func _on_attack_area_body_entered(body: Node2D) -> void:
 
 	player.take_damage(attack_damage, global_position)
 	
+func spawn_item_probability() -> void:
+	var random_number: int = randi() % 21
+	if random_number  <= 6:
+		drop_bonus = 1
+	elif random_number >= 7 and random_number <= 13:
+		drop_bonus = 2
+	else:
+		drop_bonus = 3
+	print("Multiplicador de Drop: " + str(drop_bonus))
 	
+	for key in drop_list.keys():
+		var rng: int = randi() % 100 + 1
+		if rng <= drop_list[key][1] * drop_bonus:
+			var item_texture: CompressedTexture2D = load(drop_list[key][0])
+			var item_info: Array = [
+				drop_list[key][0], 
+				drop_list[key][2], 
+				drop_list[key][3], 
+				drop_list[key][4], 
+				1
+			]
+			
+			spawn_physic_item(key, item_texture, item_info)
 
+func spawn_physic_item(key: String, item_texture: CompressedTexture2D, item_info: Array) -> void:
+	var physic_item_scene: PackedScene = load("res://scenes/enviroment/physic_item.tscn")
+	if physic_item_scene == null:
+		push_error("Physic item scene not found while spawning drop for %s" % key)
+		return
+
+	var item: PhysicItem = physic_item_scene.instantiate()
+	if item == null:
+		push_error("Failed to instantiate physic item for %s" % key)
+		return
+
+	get_parent().call_deferred("add_child", item)
+	item.global_position = global_position
+	item.update_item_info(key, item_texture, item_info)
 	
